@@ -56,6 +56,8 @@ class Chef
         if vg.nil? || vg.logical_volumes.select { |lv| lv.name == name }.empty?
           size =
             case new_resource.size
+            when /-(V|L) (\d+[kKmMgGtT])/
+              "-#{$1} #{$2}"
             when /\d+[kKmMgGtT]/
               "--size #{new_resource.size}"
             when /(\d{1,2}|100)%(FREE|VG|PVS)/
@@ -63,15 +65,17 @@ class Chef
             when /(\d+)/
               "--size #{$1}" # rubocop:disable PerlBackrefs
             end
-
+          
+          type = new_resource.type ? new_resource.type : ''
           stripes = new_resource.stripes ? "--stripes #{new_resource.stripes}" : ''
           stripe_size = new_resource.stripe_size ? "--stripesize #{new_resource.stripe_size}" : ''
           mirrors = new_resource.mirrors ? "--mirrors #{new_resource.mirrors}" : ''
           contiguous = new_resource.contiguous ? '--contiguous y' : ''
           readahead = new_resource.readahead ? "--readahead #{new_resource.readahead}" : ''
+          name = new_resource.name && new_resource.name != "thin_pool" ? "--name #{name}" : ''
           physical_volumes = [new_resource.physical_volumes].flatten.join ' ' if new_resource.physical_volumes
 
-          command = "lvcreate #{size} #{stripes} #{stripe_size} #{mirrors} #{contiguous} #{readahead} #{lv_params} --name #{name} #{group} #{physical_volumes}"
+          command = "lvcreate #{size} #{stripes} #{stripe_size} #{mirrors} #{contiguous} #{readahead} #{lv_params} #{group} #{name} #{physical_volumes}"
           Chef::Log.debug "Executing lvm command: '#{command}'"
           output = lvm.raw(command)
           Chef::Log.debug "Command output: '#{output}'"

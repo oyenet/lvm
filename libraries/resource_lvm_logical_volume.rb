@@ -104,7 +104,7 @@ class Chef
           :size,
           arg,
           kind_of: String,
-          regex: /^(\d+[kKmMgGtTpPeE]|(\d{1,2}|100)%(FREE|VG|PVS)|\d+)$/,
+          regex: /^(-(L|V) )?(\d+[kKmMgGtTpPeE]|(\d{1,2}|100)%(FREE|VG|PVS)|\d+)$/,
           required: true
         )
       end
@@ -272,6 +272,20 @@ class Chef
           :take_up_free_space,
           arg,
           kind_of: [TrueClass, FalseClass]
+        )
+      end
+
+      # Attribute: type - the volume type
+      #
+      # @param arg [String] the volume type
+      #
+      # @return [String] the volume type
+      #
+      def type(arg = nil)
+        set_or_return(
+          :type,
+          arg,
+          kind_of: String
         )
       end
     end
